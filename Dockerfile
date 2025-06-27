@@ -1,3 +1,5 @@
+# Multi-stage Dockerfile for Java web application
+
 # Stage 1: Builder - Compile and package the application
 FROM maven:3.8.6-openjdk-11 AS builder
 
@@ -16,13 +18,13 @@ COPY server/src ./server/src
 COPY webapp/src ./webapp/src
 
 # 4. Build the application with debug output
-RUN mvn clean package -X
+RUN mvn clean package
 
 # 5. Verify the build output
 RUN ls -l /app/server/target/ && ls -l /app/webapp/target/
 
 # Stage 2: Runtime - Deploy to Tomcat
-FROM tomcat:9.0.95-jre11-openjdk-slim AS runtime
+FROM tomcat:9.0-jre11-openjdk-slim AS runtime
 
 # 1. Clean default Tomcat apps (security best practice)
 RUN rm -rf /usr/local/tomcat/webapps/*
