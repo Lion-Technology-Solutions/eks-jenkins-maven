@@ -8,20 +8,17 @@
   <artifactId>maven-project</artifactId>
   <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>Modernized Maven Project</name>
-  <description>Updated Maven multi-module project with modern dependencies</description>
+  <name>Maven Project</name>
+  <description>Sample Maven project with a working, deployable site.</description>
   <url>http://www.example.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <java.version>11</java.version>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
-    <maven.version>3.8.6</maven.version>
-    <spring.version>5.3.23</spring.version>
-    <servlet.api.version>4.0.1</servlet.api.version>
     <junit.version>5.9.2</junit.version>
+    <servlet.api.version>4.0.1</servlet.api.version>
+    <mockito.version>5.3.1</mockito.version>
   </properties>
 
   <modules>
@@ -57,15 +54,8 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>5.3.1</version>
+        <version>${mockito.version}</version>
         <scope>test</scope>
-      </dependency>
-
-      <!-- Spring Core (if needed) -->
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <version>${spring.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -73,7 +63,6 @@
   <build>
     <pluginManagement>
       <plugins>
-        <!-- Modern Maven Compiler Plugin -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -85,7 +74,6 @@
           </configuration>
         </plugin>
 
-        <!-- Modern WAR Plugin -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
@@ -94,82 +82,8 @@
             <failOnMissingWebXml>false</failOnMissingWebXml>
           </configuration>
         </plugin>
-
-        <!-- Modern Release Plugin -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>3.0.0</version>
-          <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-          </configuration>
-        </plugin>
-
-        <!-- Modern Site Plugin -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.12.1</version>
-        </plugin>
-
-        <!-- Modern Checkstyle -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.2.1</version>
-        </plugin>
-
-        <!-- Modern PMD -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <version>3.20.0</version>
-        </plugin>
-
-        <!-- Modern Surefire -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
       </plugins>
     </pluginManagement>
-
-    <plugins>
-      <!-- Compiler plugin applied to all modules -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-
-      <!-- Modern versions of reporting plugins -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <reportPlugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-project-info-reports-plugin</artifactId>
-              <version>3.4.2</version>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-pmd-plugin</artifactId>
-            </plugin>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jxr-plugin</artifactId>
-              <version>3.3.0</version>
-            </plugin>
-          </reportPlugins>
-        </configuration>
-      </plugin>
-    </plugins>
   </build>
 
   <reporting>
@@ -179,6 +93,21 @@
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>3.4.2</version>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>3.2.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.20.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>3.3.0</version>
+      </plugin>
     </plugins>
   </reporting>
 
@@ -187,12 +116,4 @@
     <developerConnection>scm:git:git@github.com:Lion-Technology-Solutions/eks-jenkins-maven.git</developerConnection>
     <url>https://github.com/Lion-Technology-Solutions/eks-jenkins-maven</url>
   </scm>
-
-  <distributionManagement>
-    <site>
-      <id>site-server</id>
-      <name>Project Site</name>
-      <url>file://${project.build.directory}/site</url>
-    </site>
-  </distributionManagement>
 </project>
