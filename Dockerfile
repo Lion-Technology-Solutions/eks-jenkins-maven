@@ -1,155 +1,44 @@
-#------------------------with tomcat image mavne need to be install and run goal before-------------
-# we need to install mavne and run goal make it ready war file 
-# FROM tomcat:latest
-# RUN cp -R  /usr/local/tomcat/webapps.dist/*  /usr/local/tomcat/webapps
-# COPY /webapp/target/*.war /usr/local/tomcat/webapps
+# Stage 1: Builder - Compile and package the application
+FROM maven:3.8.6-openjdk-11 AS builder
 
-
-#--------------------with mavne and tomcat images---------
-#FROM maven:3.8.4-eclipse-temurin-17 AS build
-#RUN mkdir /app
-#WORKDIR /app
-#COPY . .
-#RUN mvn package
-
-#FROM tomcat:latest
-#COPY --from=build /app/webapp/target/webapp.war /usr/local/tomcat/webapps/webapp.war
-#RUN cp -R  /usr/local/tomcat/webapps.dist/*  /usr/local/tomcat/webapps
-
-
-
-#--------------------Taking direct image maven and Tomcat on ubuntu------------------##
-# FROM ubuntu:latest as builder
-# RUN apt-get update && \
-#     apt-get install -y openjdk-8-jdk wget unzip
-
-# ARG MAVEN_VERSION=3.9.6
-# RUN wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz && \
-#     tar -zxvf apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
-#     rm apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
-#     mv apache-maven-${MAVEN_VERSION} /usr/lib/maven
-
-# ENV MAVEN_HOME /usr/lib/maven
-# ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
-# ENV PATH=$MAVEN_HOME/bin:$PATH
-# RUN mkdir -p /app
-# COPY . /app
-# WORKDIR /app
-# RUN mvn install
-
-
-# FROM tomcat:latest
-# COPY --from=builder /app/webapp/target/webapp.war /usr/local/tomcat/webapps/webapp.war
-# RUN cp -R  /usr/local/tomcat/webapps.dist/*  /usr/local/tomcat/webapps
-
-
-
-#-------------mavne and tomcat both on ubuntu -----------#
-FROM maven:3.8.4-eclipse-temurin-17 AS build
-# RUN mkdir /app
-# WORKDIR /app
-# COPY . .
-# RUN mvn package
-
-
-# #tomcat process 
-# FROM ubuntu:20.04
-
-# # Set environment variables
-# ENV DEBIAN_FRONTEND=noninteractive
-
-# # Install necessary packages
-# RUN apt-get update && apt-get install -y \
-#     openjdk-11-jdk \
-#     wget \
-#     curl \
-#     && rm -rf /var/lib/apt/lists/*
-
-# # Set the Java environment variables
-# ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-# ENV PATH=$JAVA_HOME/bin:$PATH
-
-# # Download and extract Tomcat (correcting the download and extraction paths)
-# RUN wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.102/bin/apache-tomcat-9.0.102.tar.gz -O /tmp/tomcat.tar.gz && \
-#     mkdir /opt/tomcat && \
-#     tar xzvf /tmp/tomcat.tar.gz -C /opt/tomcat --strip-components=1 && \
-#     rm /tmp/tomcat.tar.gz
-
-# # Set up Tomcat environment variables
-# ENV CATALINA_HOME=/opt/tomcat
-# ENV PATH=$CATALINA_HOME/bin:$PATH
-
-# # Expose Tomcat port
-# EXPOSE 8080
-
-# # Copy the generated WAR file from the build stage
-# COPY --from=build /app/webapp/target/webapp.war /opt/tomcat/webapps/webapp.war
-# # Start Tomcat
-# CMD ["/opt/tomcat/bin/catalina.sh", "run"]
-
-#----------------maven and tomcate on ubuntu ------------------------
-
-# Use the official Ubuntu image as the base image for building the Maven project
-FROM ubuntu:20.04 AS build
-
-# Set non-interactive mode for installing packages
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install necessary packages: OpenJDK 11, Maven, and other utilities
-RUN apt-get update && apt-get install -y \
-    openjdk-11-jdk \
-    maven \
-    wget \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set JAVA_HOME environment variable
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the project files into the container
-COPY . .
+# 1. Copy only the POM files first (for better layer caching)
+COPY pom.xml .
+COPY server/pom.xml ./server/
+COPY webapp/pom.xml ./webapp/
 
-# Build the project using Maven
-RUN mvn clean package
+# 2. Download all dependencies (offline mode)
+RUN mvn dependency:go-offline -B
 
-# Debug: List the contents of the target directory to confirm the WAR file
-RUN ls -al /app/webapp/target
-# Use the official Ubuntu image as the base for the runtime environment
-FROM ubuntu:20.04
+# 3. Copy actual source files
+COPY server/src ./server/src
+COPY webapp/src ./webapp/src
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+# 4. Build the application with debug output
+RUN mvn clean package -X
 
-# Install necessary packages
-RUN apt-get update && apt-get install -y \
-    openjdk-11-jdk \
-    wget \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# 5. Verify the build output
+RUN ls -l /app/server/target/ && ls -l /app/webapp/target/
 
-# Set the Java environment variables
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-ENV PATH=$JAVA_HOME/bin:$PATH
+# Stage 2: Runtime - Deploy to Tomcat
+FROM tomcat:9.0.95-jre11-openjdk-slim AS runtime
 
-# Download and extract Tomcat (correcting the download and extraction paths)
-RUN wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.106/bin/apache-tomcat-9.0.106.tar.gz -O /tmp/tomcat.tar.gz && \
-    mkdir /opt/tomcat && \
-    tar xzvf /tmp/tomcat.tar.gz -C /opt/tomcat --strip-components=1 && \
-    rm /tmp/tomcat.tar.gz
+# 1. Clean default Tomcat apps (security best practice)
+RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Set up Tomcat environment variables
-ENV CATALINA_HOME=/opt/tomcat
-ENV PATH=$CATALINA_HOME/bin:$PATH
+# 2. Copy the built WAR file from builder stage
+COPY --from=builder /app/webapp/target/*.war /usr/local/tomcat/webapps/ROOT.war
 
-# Expose Tomcat port
+# 3. Set proper permissions
+RUN chmod -R 755 /usr/local/tomcat
+
+# 4. Expose port
 EXPOSE 8080
 
-# Copy the generated WAR file from the build stage
-COPY --from=build /app/webapp/target/webapp.war /opt/tomcat/webapps/webapp.war
-# Start Tomcat
-CMD ["/opt/tomcat/bin/catalina.sh", "run"]
+# 5. Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost:8080/ || exit 1
 
+# 6. Start command
+CMD ["catalina.sh", "run"]
