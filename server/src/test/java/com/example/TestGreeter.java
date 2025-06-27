@@ -1,5 +1,7 @@
-import org.junit.jupiter.api.Test;
+package com.example;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestGreeter {
@@ -11,14 +13,7 @@ public class TestGreeter {
     }
 
     @Test
-    public void testGreetContainsName() {
-        String result = greeter.greet("World");
-        assertTrue(result.contains("World"));
-    }
-
-    @Test
-    public void testGreetLength() {
-        String result = greeter.greet("World");
-        assertTrue(result.length() > 5);
+    public void testGreet() {
+        assertEquals("Hello, World!", greeter.greet("World"));
     }
 }
