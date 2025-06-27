@@ -1,16 +1,19 @@
-apiVersion: apps/v1 
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: regapp-deployment
-  labels: 
-     app: regapp
-
+  labels:
+    app: regapp
 spec:
-  replicas: 2 
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: regapp
-
   template:
     metadata:
       labels:
@@ -19,14 +22,11 @@ spec:
       containers:
       - name: regapp
         image: 768477844960.dkr.ecr.us-east-2.amazonaws.com/jenkins-eks:25
-        imagePullPolicy: Always
         ports:
         - containerPort: 8080
-    strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod
 
 ---
 apiVersion: v1
