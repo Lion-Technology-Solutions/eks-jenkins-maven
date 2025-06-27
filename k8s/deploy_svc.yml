@@ -26,21 +26,4 @@ spec:
         - containerPort: 8080
         env:
         - name: SPRING_PROFILES_ACTIVE
-          value: "prod
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: regapp-service
-  labels:
-    app: regapp 
-spec:
-  selector:
-    app: regapp 
-
-  ports:
-    - port: 8080
-      targetPort: 8080
-
-  type: LoadBalancer
+          value: "prod  
