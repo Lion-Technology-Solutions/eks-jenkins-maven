@@ -16,13 +16,13 @@ spec:
       labels:
         app: regapp
     spec:
-    containers:
+      containers:
       - name: regapp
-        image: 483216680875.dkr.ecr.us-east-1.amazonaws.com/demo:53
+        image: 768477844960.dkr.ecr.us-east-2.amazonaws.com/jenkins-eks:25
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
-  strategy:
+    strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
