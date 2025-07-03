@@ -1,20 +1,25 @@
 pipeline {
     agent any
+    
+    tools {
+    jdk 'jdk11'
+    maven  'maven3.9.8'
+  }  
 
     environment {
         // AWS & EKS Config
         AWS_ACCOUNT_ID = '768477844960'  // Replace with your AWS Account ID
         AWS_REGION = 'us-east-2'
-        ECR_REPO = 'jenkins-eks'
+        ECR_REPO = 'prod'
         DOCKER_IMAGE = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${BUILD_NUMBER}"
         
         // EKS Config
         EKS_CLUSTER_NAME = 'prod'
-        KUBE_NAMESPACE = 'prod'
+        KUBE_NAMESPACE = 'eks-jenkins'
         
         // Git Config
-        GIT_REPO = 'https://github.com/CloudTechDevOps/project-1-maven-jenkins-CICD-docker-eks-.git'
-        BRANCH = 'main'
+        GIT_REPO = 'https://github.com/Lion-Technology-Solutions/eks-jenkins-maven.git'
+        BRANCH = 'demo'
     }
 
     stages {
@@ -60,7 +65,7 @@ pipeline {
             steps {
                 script {
                     // Apply Kubernetes manifests (assuming they are in `k8s/` dir)
-                    sh "kubectl apply -f k8s/deployment.yaml -n ${KUBE_NAMESPACE}"
+                    sh "kubectl apply -f k8s/deploy_svc.yml -n ${KUBE_NAMESPACE}"
                     sh "kubectl apply -f k8s/service.yaml -n ${KUBE_NAMESPACE}"
                     
                     // (Optional) Blue-Green or Canary Deployment Logic
