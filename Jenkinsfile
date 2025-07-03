@@ -15,7 +15,7 @@ pipeline {
         
         // EKS Config
         EKS_CLUSTER_NAME = 'prod'
-        KUBE_NAMESPACE = 'eks-jenkins created'
+        KUBE_NAMESPACE = 'eks-jenkins'
         
         // Git Config
         GIT_REPO = 'https://github.com/Lion-Technology-Solutions/eks-jenkins-maven.git'
