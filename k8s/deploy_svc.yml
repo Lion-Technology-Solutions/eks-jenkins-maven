@@ -20,7 +20,7 @@ spec:
         app: regapp
     spec:
       containers:
-      - name: regapp
+      - name:  regapp
         image:    ${DOCKER_IMAGE}                     #768477844960.dkr.ecr.us-east-2.amazonaws.com/jenkins-eks:25
         ports:
         - containerPort: 8080
